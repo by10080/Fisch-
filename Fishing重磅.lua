@@ -1,288 +1,214 @@
--- ========== 修复版 WindUI 适配vivo Y30 ==========
-local Library = {}
-Library.__index = Library
-
-function Library:Window(options)
-    local self = setmetatable({}, Library)
-    self.Title = options.Title or "Window"
-    self.Size = options.Size or UDim2.new(0, 340, 0, 400)
-    self.Position = options.Position or UDim2.new(0.5, 0, 0.5, 0)
-    self.Tabs = {}
-    self.ToggleKey = Enum.KeyCode[options.AutoKey or "RightShift"]
-
-    -- 安卓防拦截路径 适配vivo Y30权限机制
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "WindUI"
-    ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui -- 替换CoreGui路径
-    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    ScreenGui.ResetOnSpawn = false
-
-    -- 主窗口容器
-    local Main = Instance.new("Frame")
-    Main.Name = "Main"
-    Main.Parent = ScreenGui
-    Main.Size = self.Size
-    Main.Position = self.Position
-    Main.AnchorPoint = Vector2.new(0.5, 0.5)
-    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Main.ClipsDescendants = true
-
-    -- 顶部标题栏
-    local TopBar = Instance.new("Frame")
-    TopBar.Name = "TopBar"
-    TopBar.Parent = Main
-    TopBar.Size = UDim2.new(1, 0, 0, 40) -- 加高适配触屏拖拽
-    TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Name = "Title"
-    TitleLabel.Parent = TopBar
-    TitleLabel.Size = UDim2.new(1, -15, 1, 0)
-    TitleLabel.Position = UDim2.new(0, 15, 0, 0)
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Text = self.Title
-    TitleLabel.TextColor3 = Color3.new(1, 1, 1)
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    TitleLabel.Font = Enum.Font.SourceSansBold
-    TitleLabel.TextSize = 16
-
-    -- 侧边标签栏
-    local TabContainer = Instance.new("Frame")
-    TabContainer.Name = "TabContainer"
-    TabContainer.Parent = Main
-    TabContainer.Size = UDim2.new(0, 100, 1, -40)
-    TabContainer.Position = UDim2.new(0, 0, 0, 40)
-    TabContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-
-    -- 内容容器
-    local Content = Instance.new("Frame")
-    Content.Name = "Content"
-    Content.Parent = Main
-    Content.Size = UDim2.new(1, -100, 1, -40)
-    Content.Position = UDim2.new(0, 100, 0, 40)
-    Content.BackgroundTransparency = 1
-
-    self.ScreenGui = ScreenGui
-    self.Main = Main
-    self.TabContainer = TabContainer
-    self.Content = Content
-    self.CurrentTab = nil
-
-    -- 触屏+鼠标双适配拖拽逻辑
-    local dragToggle, dragInput, dragStart, startPos
-    local UIS = game:GetService("UserInputService")
-    TopBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragToggle = true
-            dragStart = input.Position
-            startPos = Main.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragToggle = false
-                end
-            end)
-        end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if input == dragInput and dragToggle then
-            local delta = input.Position - dragStart
-            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-
-    -- 窗口隐藏/显示快捷键
-    UIS.InputBegan:Connect(function(input, gp)
-        if gp then return end
-        if input.KeyCode == self.ToggleKey then
-            Main.Visible = not Main.Visible
-        end
-    end)
-
-    return self
-end
-
--- 标签页方法 绑定到Window实例
-function Library:Tab(options)
-    local Tab = {}
-    Tab.Name = options.Title or "Tab"
-    Tab.Button = Instance.new("TextButton")
-    Tab.Container = Instance.new("ScrollingFrame")
-
-    -- 标签按钮
-    Tab.Button.Name = Tab.Name
-    Tab.Button.Parent = self.TabContainer
-    Tab.Button.Size = UDim2.new(1, 0, 0, 42) -- 加高适配vivo触屏点击
-    Tab.Button.Position = UDim2.new(0, 0, 0, #self.Tabs * 42)
-    Tab.Button.BackgroundTransparency = 1
-    Tab.Button.Text = Tab.Name
-    Tab.Button.TextColor3 = Color3.fromRGB(180, 180, 180)
-    Tab.Button.TextXAlignment = Enum.TextXAlignment.Center
-    Tab.Button.Font = Enum.Font.SourceSansBold
-    Tab.Button.TextSize = 14
-
-    -- 标签内容滚动容器
-    Tab.Container.Name = Tab.Name .. "Container"
-    Tab.Container.Parent = self.Content
-    Tab.Container.Size = UDim2.new(1, 0, 1, 0)
-    Tab.Container.BackgroundTransparency = 1
-    Tab.Container.Visible = false
-    Tab.Container.ScrollBarThickness = 5
-    Tab.Container.CanvasSize = UDim2.new(0, 0, 0, 0)
-
-    Tab.ItemsCount = 0
-
-    -- Section方法 绑定到Tab实例
-    function Tab:Section(options)
-        local Section = {}
-        Section.Name = options.Title or "Section"
-        Section.Container = Instance.new("Frame")
-        Section.Title = Instance.new("TextLabel")
-        Section.List = Instance.new("Frame")
-
-        Section.Container.Name = Section.Name
-        Section.Container.Parent = Tab.Container
-        Section.Container.Size = UDim2.new(1, -15, 0, 30)
-        Section.Container.Position = UDim2.new(0, 10, 0, Tab.ItemsCount * 40)
-        Section.Container.BackgroundTransparency = 1
-
-        Section.Title.Name = "Title"
-        Section.Title.Parent = Section.Container
-        Section.Title.Size = UDim2.new(1, 0, 0, 20)
-        Section.Title.BackgroundTransparency = 1
-        Section.Title.Text = Section.Name
-        Section.Title.TextColor3 = Color3.fromRGB(200, 200, 200)
-        Section.Title.TextXAlignment = Enum.TextXAlignment.Left
-        Section.Title.Font = Enum.Font.SourceSansBold
-        Section.Title.TextSize = 13
-
-        Section.List.Name = "List"
-        Section.List.Parent = Section.Container
-        Section.List.Size = UDim2.new(1, 0, 1, 10)
-        Section.List.Position = UDim2.new(0, 0, 0, 20)
-        Section.List.BackgroundTransparency = 1
-        Section.List.ItemsCount = 0
-
-        -- 按钮方法 绑定到Section实例
-        function Section:Button(options)
-            local Button = Instance.new("TextButton")
-            Button.Name = options.Title or "Button"
-            Button.Parent = Section.List
-            Button.Size = UDim2.new(1, -10, 0, 38) -- 大触控按钮 防vivo触屏误触
-            Button.Position = UDim2.new(0, 5, 0, Section.List.ItemsCount * 45)
-            Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-            Button.Text = options.Title
-            Button.TextColor3 = Color3.new(1, 1, 1)
-            Button.Font = Enum.Font.SourceSans
-            Button.TextSize = 14
-            Button.AutoButtonColor = false
-
-            Button.MouseButton1Click:Connect(function()
-                if options.Callback then options.Callback() end
-            end)
-
-            Section.List.ItemsCount += 1
-            Tab.ItemsCount += 1
-            Tab.Container.CanvasSize = UDim2.new(0,0,0, Tab.ItemsCount * 50)
-            return Button
-        end
-
-        -- 标签方法 绑定到Section实例
-        function Section:Label(options)
-            local Label = Instance.new("TextLabel")
-            Label.Name = "Label"
-            Label.Parent = Section.List
-            Label.Size = UDim2.new(1, -10, 0, 25)
-            Label.Position = UDim2.new(0, 5, 0, Section.List.ItemsCount * 30)
-            Label.BackgroundTransparency = 1
-            Label.Text = options.Text or ""
-            Label.TextColor3 = Color3.fromRGB(170, 170, 170)
-            Label.TextXAlignment = Enum.TextXAlignment.Left
-            Label.Font = Enum.Font.SourceSans
-            Label.TextSize = 13
-
-            Section.List.ItemsCount += 1
-            Tab.ItemsCount += 1
-            Tab.Container.CanvasSize = UDim2.new(0,0,0, Tab.ItemsCount * 50)
-            return Label
-        end
-
-        Tab.ItemsCount += 1
-        return Section
-    end
-
-    Tab.Button.MouseButton1Click:Connect(function()
-        if self.CurrentTab then
-            self.CurrentTab.Container.Visible = false
-            self.CurrentTab.Button.TextColor3 = Color3.fromRGB(180, 180, 180)
-        end
-        Tab.Container.Visible = true
-        Tab.Button.TextColor3 = Color3.new(1, 1, 1)
-        self.CurrentTab = Tab
-    end)
-
-    if #self.Tabs == 0 then
-        Tab.Container.Visible = true
-        Tab.Button.TextColor3 = Color3.new(1, 1, 1)
-        self.CurrentTab = Tab
-    end
-
-    table.insert(self.Tabs, Tab)
-    return Tab
-end
-
--- ========== 钓鱼功能主体 修复死循环 ==========
-local Window = Library:Window({
-    Title = "钓鱼调试工具",
-    AutoKey = "RightShift"
-})
-
-local MainTab = Window:Tab({Title = "功能"})
-local FishingSection = MainTab:Section({Title = "核心功能"})
-
-local autoPull = false
-local autoSell = false
-local pullFishArgs = {99999999999, 10}
+-- =============================================
+-- V悬浮球+钓鱼工具 整合版（初音背景定制版）
+-- 点悬浮球一键最小化/还原 无空白适配
+-- =============================================
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- 动态更新文本的钓鱼开关
-local PullBtn = FishingSection:Button({
-    Title = "开启自动钓鱼",
-    Callback = function()
-        autoPull = not autoPull
-        PullBtn.Text = autoPull and "关闭自动钓鱼" or "开启自动钓鱼"
-        print(autoPull and "自动钓鱼已开启" or "自动钓鱼已关闭")
-    end
-})
+local LocalPlayer = Players.LocalPlayer
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "Y30_Fish_Float"
+ScreenGui.Parent = LocalPlayer.PlayerGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.ResetOnSpawn = false
+pcall(function() ScreenGui.IgnoreGuiInset = true end)
 
-local SellBtn = FishingSection:Button({
-    Title = "开启自动卖鱼",
-    Callback = function()
-        autoSell = not autoSell
-        SellBtn.Text = autoSell and "关闭自动卖鱼" or "开启自动卖鱼"
-        print(autoSell and "自动卖鱼已开启" or "自动卖鱼已关闭")
-    end
-})
+-- 1. 主钓鱼工具窗口 原尺寸不变
+local MainWindow = Instance.new("Frame")
+MainWindow.Name = "MainWindow"
+MainWindow.Parent = ScreenGui
+MainWindow.Size = UDim2.new(0, 320, 0, 480)
+MainWindow.Position = UDim2.new(0.5, -160, 0.5, -240)
+-- 原全黑背景改为全透明，避免底色干扰
+MainWindow.BackgroundTransparency = 1
+MainWindow.Active = true
+MainWindow.Draggable = true
+MainWindow.Visible = true
+MainWindow.BorderSizePixel = 0
 
-FishingSection:Label({Text = "按RightShift隐藏/显示窗口"})
-FishingSection:Label({Text = "vivo Y30适配版"})
+-- 👇 新增：初音未来自定义背景层（适配你提供的图片）
+local customHatsuneBg = Instance.new("ImageLabel")
+customHatsuneBg.Parent = MainWindow
+customHatsuneBg.Size = UDim2.new(1, 0, 1, 0)
+customHatsuneBg.AnchorPoint = Vector2.new(0.5, 0.5)
+customHatsuneBg.Position = UDim2.new(0.5, 0, 0.5, 0)
+customHatsuneBg.BackgroundTransparency = 1
+-- 上传这张图到Roblox后替换这里的asset ID即可生效
+customHatsuneBg.Image = "替换成你上传这张初音图得到的rbxassetid"
+-- 针对这张蓝亮图专门调的半透值，不挡字还保留画面感
+customHatsuneBg.ImageTransparency = 0.32
+customHatsuneBg.ZIndex = MainWindow.ZIndex - 1
+customHatsuneBg.ScaleType = Enum.ScaleType.Crop
 
--- 独立线程后台循环 不卡UI渲染
-task.spawn(function()
-    while task.wait(0.25) do
-        if autoPull then
-            ReplicatedStorage:WaitForChild("Event", 5):WaitForChild("PullFishEvent"):FireServer(unpack(pullFishArgs))
-        end
-        if autoSell then
-            task.wait(0.3)
-            ReplicatedStorage:WaitForChild("Event", 5):WaitForChild("SellFishEvent"):FireServer()
-        end
+-- 顶部标题栏
+local TopBar = Instance.new("Frame")
+TopBar.Parent = MainWindow
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+TopBar.BackgroundTransparency = 0.2
+
+local TitleText = Instance.new("TextLabel")
+TitleText.Parent = TopBar
+TitleText.Size = UDim2.new(1, 0, 1, 0)
+TitleText.BackgroundTransparency = 1
+TitleText.Text = "钓鱼调试工具"
+TitleText.TextColor3 = Color3.new(1,1,1)
+TitleText.TextSize = 18
+TitleText.Font = Enum.Font.SourceSansBold
+TitleText.TextXAlignment = Enum.TextXAlignment.Center
+
+-- 最小化按钮 放在标题栏右上角
+local MinBtn = Instance.new("TextButton")
+MinBtn.Parent = TopBar
+MinBtn.Size = UDim2.new(0, 40, 0, 40)
+MinBtn.Position = UDim2.new(1, -45, 0, 0)
+MinBtn.BackgroundTransparency = 1
+MinBtn.Text = "-"
+MinBtn.TextColor3 = Color3.new(1,1,1)
+MinBtn.TextSize = 22
+MinBtn.Font = Enum.Font.SourceSansBold
+
+-- 左侧标签栏
+local TabBar = Instance.new("Frame")
+TabBar.Parent = MainWindow
+TabBar.Size = UDim2.new(0, 90, 1, -40)
+TabBar.Position = UDim2.new(0, 0, 0, 40)
+TabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TabBar.BackgroundTransparency = 0.2
+
+local TabBtn = Instance.new("TextButton")
+TabBtn.Parent = TabBar
+TabBtn.Size = UDim2.new(1, 0, 0, 45)
+TabBtn.Position = UDim2.new(0, 0, 0, 0)
+TabBtn.BackgroundTransparency = 1
+TabBtn.Text = "功能"
+TabBtn.TextColor3 = Color3.new(1,1,1)
+TabBtn.TextSize = 16
+TabBtn.Font = Enum.Font.SourceSansBold
+
+-- 右侧内容区
+local ContentArea = Instance.new("Frame")
+ContentArea.Parent = MainWindow
+ContentArea.Size = UDim2.new(0, 230, 1, -40)
+ContentArea.Position = UDim2.new(0, 90, 0, 40)
+ContentArea.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+ContentArea.BackgroundTransparency = 0.2
+
+local CoreTitle = Instance.new("TextLabel")
+CoreTitle.Parent = ContentArea
+CoreTitle.Size = UDim2.new(1, 0, 0, 30)
+CoreTitle.Position = UDim2.new(0, 0, 0, 5)
+CoreTitle.BackgroundTransparency = 1
+CoreTitle.Text = "核心功能"
+CoreTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+CoreTitle.TextSize = 15
+CoreTitle.Font = Enum.Font.SourceSansBold
+
+local AutoFishBtn = Instance.new("TextButton")
+AutoFishBtn.Parent = ContentArea
+AutoFishBtn.Size = UDim2.new(0, 210, 0, 50)
+AutoFishBtn.Position = UDim2.new(0, 10, 0, 45)
+AutoFishBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+AutoFishBtn.BackgroundTransparency = 0.3
+AutoFishBtn.Text = "开启秒杀鱼"
+AutoFishBtn.TextColor3 = Color3.new(1,1,1)
+AutoFishBtn.TextSize = 17
+AutoFishBtn.Font = Enum.Font.SourceSans
+AutoFishBtn.AutoButtonColor = false
+
+local AutoSellBtn = Instance.new("TextButton")
+AutoSellBtn.Parent = ContentArea
+AutoSellBtn.Size = UDim2.new(0, 210, 0, 50)
+AutoSellBtn.Position = UDim2.new(0, 10, 0, 110)
+AutoSellBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+AutoSellBtn.BackgroundTransparency = 0.3
+AutoSellBtn.Text = "开启自动卖鱼"
+AutoSellBtn.TextColor3 = Color3.new(1,1,1)
+AutoSellBtn.TextSize = 17
+AutoSellBtn.Font = Enum.Font.SourceSans
+AutoSellBtn.AutoButtonColor = false
+
+local TipLabel = Instance.new("TextLabel")
+TipLabel.Parent = ContentArea
+TipLabel.Size = UDim2.new(1, 0, 0, 30)
+TipLabel.Position = UDim2.new(0, 0, 1, -40)
+TipLabel.BackgroundTransparency = 1
+TipLabel.Text = "按菜单键 显示/隐藏"
+TipLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
+TipLabel.TextSize = 14
+TipLabel.Font = Enum.Font.SourceSans
+
+-- 2. 专属悬浮球 固定40x40大小 可拖动
+local FloatBall = Instance.new("TextButton")
+FloatBall.Parent = ScreenGui
+FloatBall.Size = UDim2.new(0, 40, 0, 40)
+FloatBall.Position = UDim2.new(0, 30, 0.5, -30)
+FloatBall.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+FloatBall.Text = "🎣"
+FloatBall.TextSize = 28
+FloatBall.Active = true
+FloatBall.Draggable = true
+FloatBall.Visible = false
+
+-- 功能开关变量
+local AutoPullSwitch = false
+local AutoSellSwitch = false
+
+-- 按钮点击逻辑
+AutoFishBtn.MouseButton1Click:Connect(function()
+    AutoPullSwitch = not AutoPullSwitch
+    AutoFishBtn.Text = AutoPullSwitch and "关闭秒杀鱼" or "开启秒杀鱼钓鱼"
+end)
+
+AutoSellBtn.MouseButton1Click:Connect(function()
+    AutoSellSwitch = not AutoSellSwitch
+    AutoSellBtn.Text = AutoSellSwitch and "关闭自动卖鱼" or "开启自动卖鱼"
+end)
+
+-- 最小化：点按钮隐藏主窗口、显示悬浮球
+MinBtn.MouseButton1Click:Connect(function()
+    MainWindow.Visible = false
+    FloatBall.Visible = true
+end)
+
+-- 还原：点悬浮球隐藏悬浮球、显示主窗口
+FloatBall.MouseButton1Click:Connect(function()
+    FloatBall.Visible = false
+    MainWindow.Visible = true
+end)
+
+-- 安卓端呼出/隐藏全界面逻辑
+UIS.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.Menu then
+        local allShow = MainWindow.Visible or FloatBall.Visible
+        MainWindow.Visible = not allShow
+        FloatBall.Visible = not allShow
     end
 end)
 
-return Library
+-- 钓鱼后台功能循环
+task.spawn(function()
+    while task.wait(0.3) do
+        if AutoPullSwitch then
+            local EventFolder = ReplicatedStorage:FindFirstChild("Event")
+            if EventFolder then
+                local PullEvent = EventFolder:FindFirstChild("PullFishEvent")
+                if PullEvent then
+                    pcall(function() PullEvent:FireServer(999999999, 10) end)
+                end
+            end
+        end
+        task.wait(0.5)
+        if AutoSellSwitch then
+            local EventFolder = ReplicatedStorage:FindFirstChild("Event")
+            if EventFolder then
+                local SellEvent = EventFolder:FindFirstChild("SellFishEvent")
+                if SellEvent then
+                    pcall(function() SellEvent:FireServer() end)
+                end
+            end
+        end
+    end
+end)
