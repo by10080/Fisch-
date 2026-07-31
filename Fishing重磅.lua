@@ -1,6 +1,6 @@
 -- =============================================
--- ObsidianUI 初音钓鱼助手 | 传送+全功能修复版
--- 适配机型: vivo Y30 无功能冲突
+-- ObsidianUI 钓鱼助手 | 传送+全功能修复版
+-- 适配机型: 多机型，无功能冲突
 -- =============================================
 
 -- 1. 加载Obsidian核心库
@@ -20,7 +20,20 @@ local Window = Library:CreateWindow({
 local MainTab = Window:AddTab("钓鱼功能", "fish")
 local TeleportTab = Window:AddTab("地图传送", "map")
 local UISettingTab = Window:AddTab("界面设置", "settings")
+-- 界面设置Tab 右侧文字区域
+UISettingTab:AddRightGroupbox("使用说明", "tips")
+UISettingTab:AddLabel([[
+✅ 自动秒钓：开启后后台自动抓鱼
+✅ 自动卖鱼：钓满自动一键清背包
+✅ 传送按钮：点一下直接跳对应地图
+⚠️ 适配低运存优化，不会闪退
 
+1.🤓🐟长老眼镜鱼（1.拿眼镜鱼去找NPC即可）
+
+2.👿🐟真型恶魔鱼获取方式（把恶魔拿到夏季海滩的瀑布里找一个人交给他然后直接在海滩钓鱼即可）
+
+3.😇🐟觉醒河罗鱼获取方式（1.去中东岛钓眼镜蛇鱼2.把鱼拿到鱼店旁边的NPC给他3.然后重新钓一次拿到长老眼镜4.拿真型恶魔鱼和长老老鱼交给后面房子的NPC再钓鱼即可）
+]])
 -- 全局状态配置表
 local Config = {
     AutoFish = false,
@@ -79,19 +92,19 @@ local MapGroup = TeleportTab:AddLeftGroupbox("直达传送", "location")
 MapGroup:AddLabel("点击直接跳转目标地图")
 
 local Maps = {
-    {id=1, name="新手渔村"},
-    {id=2, name="Sōng Dakim"},
-    {id=3, name="珊瑚浅滩"},
-    {id=4, name="沉船海域"},
-    {id=5, name="冰晶海湾"},
-    {id=6, name="火山岩岸"},
-    {id=7, name="神秘洞穴"},
-    {id=8, name="深海遗迹"},
-    {id=9, name="彩虹瀑布"},
-    {id=10, name="星空湖湾"},
-    {id=11, name="幽灵船港"},
-    {id=12, name="黄金渔场"},
-    {id=13, name="终极秘境"}
+    {id=1, name="无名水池"},
+    {id=2, name="达基姆河"},
+    {id=3, name="北部丛林"},
+    {id=4, name="钓鱼测试伤害"},
+    {id=5, name="水源污染"},
+    {id=6, name="班戈河-南极河"},
+    {id=7, name="中东海岛（长老眼镜蛇鱼）"},
+    {id=8, name="沙漠中的捕鱼区"},
+    {id=9, name="火山"},
+    {id=10, name="夏季海滩（觉醒恶魔鱼）"},
+    {id=11, name="樱花之地（把觉醒和长老给后面的人可以钓觉醒河罗鱼）"},
+    {id=12, name="PVP玩家竞技场"},
+    {id=13, name="神秘的蘑菇岛"}
 }
 
 for _, m in ipairs(Maps) do
@@ -113,7 +126,7 @@ task.spawn(function()
         if Config.AutoFish then
             local ev = game.ReplicatedStorage:FindFirstChild("Event")
             if ev and ev:FindFirstChild("PullFishEvent") then
-                pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 10)
+                pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 1)
             end
         end
         task.wait(0.3)
