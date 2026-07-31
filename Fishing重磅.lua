@@ -1,214 +1,153 @@
 -- =============================================
--- V悬浮球+钓鱼工具 整合版（初音背景定制版）
--- 点悬浮球一键最小化/还原 无空白适配
+-- ObsidianUI 初音钓鱼助手 | 传送+全功能修复版
+-- 适配机型: vivo Y30 无功能冲突
 -- =============================================
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local UIS = game:GetService("UserInputService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local LocalPlayer = Players.LocalPlayer
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Y30_Fish_Float"
-ScreenGui.Parent = LocalPlayer.PlayerGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.ResetOnSpawn = false
-pcall(function() ScreenGui.IgnoreGuiInset = true end)
+-- 1. 加载Obsidian核心库
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/Obsidian/main/Library.lua"))()
 
--- 1. 主钓鱼工具窗口 原尺寸不变
-local MainWindow = Instance.new("Frame")
-MainWindow.Name = "MainWindow"
-MainWindow.Parent = ScreenGui
-MainWindow.Size = UDim2.new(0, 320, 0, 480)
-MainWindow.Position = UDim2.new(0.5, -160, 0.5, -240)
--- 原全黑背景改为全透明，避免底色干扰
-MainWindow.BackgroundTransparency = 1
-MainWindow.Active = true
-MainWindow.Draggable = true
-MainWindow.Visible = true
-MainWindow.BorderSizePixel = 0
+-- 2. 初始化主窗口
+local Window = Library:CreateWindow({
+    Title = "🎣 钓鱼助手",
+    Footer = "v1.4 全功能修复",
+    ToggleKeybind = Enum.KeyCode.Menu,
+    Center = true,
+    AutoShow = true,
+    Resizable = false
+})
 
--- 👇 新增：初音未来自定义背景层（适配你提供的图片）
-local customHatsuneBg = Instance.new("ImageLabel")
-customHatsuneBg.Parent = MainWindow
-customHatsuneBg.Size = UDim2.new(1, 0, 1, 0)
-customHatsuneBg.AnchorPoint = Vector2.new(0.5, 0.5)
-customHatsuneBg.Position = UDim2.new(0.5, 0, 0.5, 0)
-customHatsuneBg.BackgroundTransparency = 1
--- 上传这张图到Roblox后替换这里的asset ID即可生效
-customHatsuneBg.Image = "替换成你上传这张初音图得到的rbxassetid"
--- 针对这张蓝亮图专门调的半透值，不挡字还保留画面感
-customHatsuneBg.ImageTransparency = 0.32
-customHatsuneBg.ZIndex = MainWindow.ZIndex - 1
-customHatsuneBg.ScaleType = Enum.ScaleType.Crop
+-- 3. 分页布局
+local MainTab = Window:AddTab("钓鱼功能", "fish")
+local TeleportTab = Window:AddTab("地图传送", "map")
+local UISettingTab = Window:AddTab("界面设置", "settings")
 
--- 顶部标题栏
-local TopBar = Instance.new("Frame")
-TopBar.Parent = MainWindow
-TopBar.Size = UDim2.new(1, 0, 0, 40)
-TopBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-TopBar.BackgroundTransparency = 0.2
+-- 全局状态配置表
+local Config = {
+    AutoFish = false,
+    AutoSell = false
+}
 
-local TitleText = Instance.new("TextLabel")
-TitleText.Parent = TopBar
-TitleText.Size = UDim2.new(1, 0, 1, 0)
-TitleText.BackgroundTransparency = 1
-TitleText.Text = "钓鱼调试工具"
-TitleText.TextColor3 = Color3.new(1,1,1)
-TitleText.TextSize = 18
-TitleText.Font = Enum.Font.SourceSansBold
-TitleText.TextXAlignment = Enum.TextXAlignment.Center
+-- 4. 核心钓鱼模块（修复变量绑定）
+local FishGroup = MainTab:AddLeftGroupbox("自动挂机", "anchor")
 
--- 最小化按钮 放在标题栏右上角
-local MinBtn = Instance.new("TextButton")
-MinBtn.Parent = TopBar
-MinBtn.Size = UDim2.new(0, 40, 0, 40)
-MinBtn.Position = UDim2.new(1, -45, 0, 0)
-MinBtn.BackgroundTransparency = 1
-MinBtn.Text = "-"
-MinBtn.TextColor3 = Color3.new(1,1,1)
-MinBtn.TextSize = 22
-MinBtn.Font = Enum.Font.SourceSansBold
-
--- 左侧标签栏
-local TabBar = Instance.new("Frame")
-TabBar.Parent = MainWindow
-TabBar.Size = UDim2.new(0, 90, 1, -40)
-TabBar.Position = UDim2.new(0, 0, 0, 40)
-TabBar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-TabBar.BackgroundTransparency = 0.2
-
-local TabBtn = Instance.new("TextButton")
-TabBtn.Parent = TabBar
-TabBtn.Size = UDim2.new(1, 0, 0, 45)
-TabBtn.Position = UDim2.new(0, 0, 0, 0)
-TabBtn.BackgroundTransparency = 1
-TabBtn.Text = "功能"
-TabBtn.TextColor3 = Color3.new(1,1,1)
-TabBtn.TextSize = 16
-TabBtn.Font = Enum.Font.SourceSansBold
-
--- 右侧内容区
-local ContentArea = Instance.new("Frame")
-ContentArea.Parent = MainWindow
-ContentArea.Size = UDim2.new(0, 230, 1, -40)
-ContentArea.Position = UDim2.new(0, 90, 0, 40)
-ContentArea.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-ContentArea.BackgroundTransparency = 0.2
-
-local CoreTitle = Instance.new("TextLabel")
-CoreTitle.Parent = ContentArea
-CoreTitle.Size = UDim2.new(1, 0, 0, 30)
-CoreTitle.Position = UDim2.new(0, 0, 0, 5)
-CoreTitle.BackgroundTransparency = 1
-CoreTitle.Text = "核心功能"
-CoreTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
-CoreTitle.TextSize = 15
-CoreTitle.Font = Enum.Font.SourceSansBold
-
-local AutoFishBtn = Instance.new("TextButton")
-AutoFishBtn.Parent = ContentArea
-AutoFishBtn.Size = UDim2.new(0, 210, 0, 50)
-AutoFishBtn.Position = UDim2.new(0, 10, 0, 45)
-AutoFishBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-AutoFishBtn.BackgroundTransparency = 0.3
-AutoFishBtn.Text = "开启秒杀鱼"
-AutoFishBtn.TextColor3 = Color3.new(1,1,1)
-AutoFishBtn.TextSize = 17
-AutoFishBtn.Font = Enum.Font.SourceSans
-AutoFishBtn.AutoButtonColor = false
-
-local AutoSellBtn = Instance.new("TextButton")
-AutoSellBtn.Parent = ContentArea
-AutoSellBtn.Size = UDim2.new(0, 210, 0, 50)
-AutoSellBtn.Position = UDim2.new(0, 10, 0, 110)
-AutoSellBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-AutoSellBtn.BackgroundTransparency = 0.3
-AutoSellBtn.Text = "开启自动卖鱼"
-AutoSellBtn.TextColor3 = Color3.new(1,1,1)
-AutoSellBtn.TextSize = 17
-AutoSellBtn.Font = Enum.Font.SourceSans
-AutoSellBtn.AutoButtonColor = false
-
-local TipLabel = Instance.new("TextLabel")
-TipLabel.Parent = ContentArea
-TipLabel.Size = UDim2.new(1, 0, 0, 30)
-TipLabel.Position = UDim2.new(0, 0, 1, -40)
-TipLabel.BackgroundTransparency = 1
-TipLabel.Text = "按菜单键 显示/隐藏"
-TipLabel.TextColor3 = Color3.fromRGB(170, 170, 170)
-TipLabel.TextSize = 14
-TipLabel.Font = Enum.Font.SourceSans
-
--- 2. 专属悬浮球 固定40x40大小 可拖动
-local FloatBall = Instance.new("TextButton")
-FloatBall.Parent = ScreenGui
-FloatBall.Size = UDim2.new(0, 40, 0, 40)
-FloatBall.Position = UDim2.new(0, 30, 0.5, -30)
-FloatBall.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-FloatBall.Text = "🎣"
-FloatBall.TextSize = 28
-FloatBall.Active = true
-FloatBall.Draggable = true
-FloatBall.Visible = false
-
--- 功能开关变量
-local AutoPullSwitch = false
-local AutoSellSwitch = false
-
--- 按钮点击逻辑
-AutoFishBtn.MouseButton1Click:Connect(function()
-    AutoPullSwitch = not AutoPullSwitch
-    AutoFishBtn.Text = AutoPullSwitch and "关闭秒杀鱼" or "开启秒杀鱼钓鱼"
-end)
-
-AutoSellBtn.MouseButton1Click:Connect(function()
-    AutoSellSwitch = not AutoSellSwitch
-    AutoSellBtn.Text = AutoSellSwitch and "关闭自动卖鱼" or "开启自动卖鱼"
-end)
-
--- 最小化：点按钮隐藏主窗口、显示悬浮球
-MinBtn.MouseButton1Click:Connect(function()
-    MainWindow.Visible = false
-    FloatBall.Visible = true
-end)
-
--- 还原：点悬浮球隐藏悬浮球、显示主窗口
-FloatBall.MouseButton1Click:Connect(function()
-    FloatBall.Visible = false
-    MainWindow.Visible = true
-end)
-
--- 安卓端呼出/隐藏全界面逻辑
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.Menu then
-        local allShow = MainWindow.Visible or FloatBall.Visible
-        MainWindow.Visible = not allShow
-        FloatBall.Visible = not allShow
+FishGroup:AddToggle("AutoFishSwitch", {
+    Text = "自动秒钓",
+    Default = false,
+    Callback = function(v)
+        Config.AutoFish = v
+        Library:Notify(v and "✅自动秒钓已开启" or "⏹️自动秒钓已关闭", 2)
     end
-end)
+})
 
--- 钓鱼后台功能循环
+FishGroup:AddToggle("AutoSellSwitch", {
+    Text = "自动卖鱼",
+    Default = false,
+    Callback = function(v)
+        Config.AutoSell = v
+        Library:Notify(v and "✅自动卖鱼已开启" or "⏹️自动卖鱼已关闭", 2)
+    end
+})
+
+FishGroup:AddButton({
+    Text = "手动全钓一次",
+    Func = function()
+        local ev = game.ReplicatedStorage:FindFirstChild("Event")
+        if ev and ev:FindFirstChild("PullFishEvent") then
+            pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 10)
+            Library:Notify("🎣已执行手动秒钓", 2)
+        else
+            Library:Notify("❌事件未加载", 2)
+        end
+    end
+})
+
+FishGroup:AddButton({
+    Text = "手动全卖一次",
+    Func = function()
+        local ev = game.ReplicatedStorage:FindFirstChild("Event")
+        if ev and ev:FindFirstChild("SellFishEvent") then
+            pcall(ev.SellFishEvent.FireServer, ev.SellFishEvent)
+            Library:Notify("💰已执行手动卖鱼", 2)
+        else
+            Library:Notify("❌事件未加载", 2)
+        end
+    end
+})
+
+-- 地图传送模块（保留原有可用逻辑）
+local MapGroup = TeleportTab:AddLeftGroupbox("直达传送", "location")
+MapGroup:AddLabel("点击直接跳转目标地图")
+
+local Maps = {
+    {id=1, name="新手渔村"},
+    {id=2, name="Sōng Dakim"},
+    {id=3, name="珊瑚浅滩"},
+    {id=4, name="沉船海域"},
+    {id=5, name="冰晶海湾"},
+    {id=6, name="火山岩岸"},
+    {id=7, name="神秘洞穴"},
+    {id=8, name="深海遗迹"},
+    {id=9, name="彩虹瀑布"},
+    {id=10, name="星空湖湾"},
+    {id=11, name="幽灵船港"},
+    {id=12, name="黄金渔场"},
+    {id=13, name="终极秘境"}
+}
+
+for _, m in ipairs(Maps) do
+    MapGroup:AddButton({
+        Text = "传送到这里"..m.name,
+        Func = function()
+            local rs = game:GetService("ReplicatedStorage")
+            local tev = rs:WaitForChild("Event"):WaitForChild("ChangeMapEvent")
+            local ok, err = pcall(tev.FireServer, tev, m.id, m.name)
+            Library:Notify(ok and ("✅已到"..m.name) or "❌传送失败:"..tostring(err), 2.5)
+        end
+    })
+end
+
+-- 后台循环（修复空引用断连问题）
 task.spawn(function()
-    while task.wait(0.3) do
-        if AutoPullSwitch then
-            local EventFolder = ReplicatedStorage:FindFirstChild("Event")
-            if EventFolder then
-                local PullEvent = EventFolder:FindFirstChild("PullFishEvent")
-                if PullEvent then
-                    pcall(function() PullEvent:FireServer(999999999, 10) end)
-                end
+    while task.wait(0.4) do
+        -- 自动秒钓
+        if Config.AutoFish then
+            local ev = game.ReplicatedStorage:FindFirstChild("Event")
+            if ev and ev:FindFirstChild("PullFishEvent") then
+                pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 10)
             end
         end
-        task.wait(0.5)
-        if AutoSellSwitch then
-            local EventFolder = ReplicatedStorage:FindFirstChild("Event")
-            if EventFolder then
-                local SellEvent = EventFolder:FindFirstChild("SellFishEvent")
-                if SellEvent then
-                    pcall(function() SellEvent:FireServer() end)
-                end
+        task.wait(0.3)
+        -- 自动卖鱼
+        if Config.AutoSell then
+            local ev = game.ReplicatedStorage:FindFirstChild("Event")
+            if ev and ev:FindFirstChild("SellFishEvent") then
+                pcall(ev.SellFishEvent.FireServer, ev.SellFishEvent)
             end
         end
     end
+end)
+
+-- 悬浮球还原
+local Gui = game.Players.LocalPlayer.PlayerGui
+local Ball = Instance.new("TextButton")
+Ball.Name = "助手悬浮球"
+Ball.Parent = Gui
+Ball.Size = UDim2.new(0, 44, 0, 44)
+Ball.Position = UDim2.new(0.015,0,0.5,-22)
+Ball.BackgroundColor3 = Color3.fromRGB(0, 160, 255)
+Ball.Text = "🎣"
+Ball.TextSize = 29
+Ball.Active = true
+Ball.Draggable = true
+Ball.Visible = false
+Instance.new("UICorner", Ball).CornerRadius = UDim.new(1,0)
+
+Ball.MouseButton1Click:Connect(function()
+    Library:ToggleUI()
+    Ball.Visible = false
+end)
+
+Window.MinimizeButton.MouseButton1Click:Connect(function()
+    Library:ToggleUI()
+    Ball.Visible = true
 end)
