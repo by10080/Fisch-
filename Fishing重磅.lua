@@ -53,7 +53,7 @@ FishGroup:AddButton({
     Func = function()
         local ev = game.ReplicatedStorage:FindFirstChild("Event")
         if ev and ev:FindFirstChild("PullFishEvent") then
-            pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 10)
+            pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 1)
             Library:Notify("🎣已执行手动秒钓", 2)
         else
             Library:Notify("❌事件未加载", 2)
