@@ -130,7 +130,8 @@ TipsGroup:AddLabel({
 
 3.😇🐟觉醒河罗鱼获取方式（1.去中东岛钓眼镜蛇鱼2.把鱼拿到鱼店旁边的NPC给他3.然后重新钓一次拿到长老眼镜4.拿真型恶魔鱼和长老老鱼交给后面房子的NPC再钓鱼即可）
 ]],
-    AutoWrap = true MaxWidth = 600
+    AutoWrap = true
+    MaxWidth = 300
 })
 
 -- 后台循环（修复空引用断连问题）
