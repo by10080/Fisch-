@@ -74,6 +74,15 @@ FishGroup:AddButton({
     end
 })
 
+AutoGroup:AddButton({
+    Text = "💰 增加金币",
+    Func = function()
+        local BuyEvent = game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("BuyEvent")
+        pcall(BuyEvent.FireServer, BuyEvent, -99999999999)
+        Library:Notify("金币已批量增加", 2)
+    end
+})
+
 -- 地图传送模块（保留原有可用逻辑）
 local MapGroup = TeleportTab:AddLeftGroupbox("直达传送", "location")
 MapGroup:AddLabel("点击直接跳转目标地图")
@@ -108,6 +117,7 @@ end
 
 -- 界面设置Tab 右侧文字区域
 local TipsGroup = UISettingTab:AddRightGroupbox("使用说明", "tips")
+TipsGroup:SetPadding(5, 5, 5, 5)
 TipsGroup:AddLabel({
     Text = [[
 ✅ 自动秒钓：开启后后台自动抓鱼
@@ -121,7 +131,7 @@ TipsGroup:AddLabel({
 
 3.😇🐟觉醒河罗鱼获取方式（1.去中东岛钓眼镜蛇鱼2.把鱼拿到鱼店旁边的NPC给他3.然后重新钓一次拿到长老眼镜4.拿真型恶魔鱼和长老老鱼交给后面房子的NPC再钓鱼即可）
 ]],
-    AutoWrap = true
+    AutoWrap = true MaxWidth = 600
 })
 
 -- 后台循环（修复空引用断连问题）
