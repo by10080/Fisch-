@@ -54,7 +54,7 @@ FishGroup:AddButton({
     Func = function()
         local ev = game.ReplicatedStorage:FindFirstChild("Event")
         if ev and ev:FindFirstChild("PullFishEvent") then
-            pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 1)
+            pcall(function() ev.PullFishEvent:FireServer(9999999999, 1) end)
             Library:Notify("🎣已执行手动秒钓", 2)
         else
             Library:Notify("❌事件未加载", 2)
@@ -65,7 +65,7 @@ FishGroup:AddButton({
 FishGroup:AddButton({
     Text = "手动全卖一次",
     Func = function()
-        local ev = game.ReplicatedStorage:FindFirstChild("Event")
+        local ev = game:GetService("ReplicatedStorage"):FindFirstChild("Event")
         if ev and ev:FindFirstChild("SellFishEvent") then
             pcall(ev.SellFishEvent.FireServer, ev.SellFishEvent)
             Library:Notify("💰已执行手动卖鱼", 2)
@@ -78,7 +78,7 @@ AutoGroup:AddButton({
     Text = "💰 增加金币",
     Func = function()
         local BuyEvent = game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("BuyEvent")
-        pcall(BuyEvent.FireServer, BuyEvent, -99999999999)
+        pcall(function() BuyEvent:FireServer(-9999999999) end)
         Library:Notify("金币已批量增加", 2)
     end
 })
@@ -104,12 +104,12 @@ local Maps = {
 
 for _, m in ipairs(Maps) do
     MapGroup:AddButton({
-        Text = "传送到这里"..m.name,
+        Text = "传送到"..m.name,
         Func = function()
             local rs = game:GetService("ReplicatedStorage")
             local tev = rs:WaitForChild("Event"):WaitForChild("ChangeMapEvent")
-            local ok, err = pcall(tev.FireServer, tev, m.id, m.name)
-            Library:Notify(ok and ("✅已到"..m.name) or "❌传送失败:"..tostring(err), 2.5)
+            local ok, err = pcall(function() tev:FireServer(m.id, m.name) end)
+            Library:Notify(ok and ("✅已传送到"..m.name) or ("❌传送失败:"..tostring(err)), 2.5)
         end
     })
 end
@@ -174,7 +174,9 @@ Ball.MouseButton1Click:Connect(function()
     Library:ToggleUI()
     Ball.Visible = false
 end)
-
+if Window:FindFirstChild("MinimizeButton") then
+    -- 绑定点击事件的代码
+end
 Window.MinimizeButton.MouseButton1Click:Connect(function()
     Library:ToggleUI()
     Ball.Visible = true
