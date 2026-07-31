@@ -29,6 +29,7 @@ local Config = {
 
 -- 4. 核心钓鱼模块（修复变量绑定）
 local FishGroup = MainTab:AddLeftGroupbox("自动挂机", "anchor")
+local AutoGroup = MainTab:AddLeftGroupbox("金币功能", "coin")
 
 FishGroup:AddToggle("AutoFishSwitch", {
     Text = "自动秒钓",
@@ -73,7 +74,6 @@ FishGroup:AddButton({
         end
     end
 })
-
 AutoGroup:AddButton({
     Text = "💰 增加金币",
     Func = function()
@@ -82,7 +82,6 @@ AutoGroup:AddButton({
         Library:Notify("金币已批量增加", 2)
     end
 })
-
 -- 地图传送模块（保留原有可用逻辑）
 local MapGroup = TeleportTab:AddLeftGroupbox("直达传送", "location")
 MapGroup:AddLabel("点击直接跳转目标地图")
@@ -167,7 +166,7 @@ Ball.Text = "🎣"
 Ball.TextSize = 29
 Ball.Active = true
 Ball.Draggable = true
-Ball.Visible = false
+Ball.Visible = true
 Instance.new("UICorner", Ball).CornerRadius = UDim.new(1,0)
 
 Ball.MouseButton1Click:Connect(function()
