@@ -107,8 +107,9 @@ for _, m in ipairs(Maps) do
 end
 
 -- 界面设置Tab 右侧文字区域
-UISettingTab:AddRightGroupbox("使用说明", "tips")
-UISettingTab:AddLabel([[
+local TipsGroup = UISettingTab:AddRightGroupbox("使用说明", "tips")
+TipsGroup:AddLabel({
+    Text = [[
 ✅ 自动秒钓：开启后后台自动抓鱼
 ✅ 自动卖鱼：钓满自动一键清背包
 ✅ 传送按钮：点一下直接跳对应地图
@@ -119,7 +120,9 @@ UISettingTab:AddLabel([[
 2.👿🐟真型恶魔鱼获取方式（把恶魔拿到夏季海滩的瀑布里找一个人交给他然后直接在海滩钓鱼即可）
 
 3.😇🐟觉醒河罗鱼获取方式（1.去中东岛钓眼镜蛇鱼2.把鱼拿到鱼店旁边的NPC给他3.然后重新钓一次拿到长老眼镜4.拿真型恶魔鱼和长老老鱼交给后面房子的NPC再钓鱼即可）
-]])
+]],
+    AutoWrap = true
+})
 
 -- 后台循环（修复空引用断连问题）
 task.spawn(function()
