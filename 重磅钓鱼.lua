@@ -19,7 +19,7 @@ local Window = Library:CreateWindow({
 -- 创建分页
 local MainTab = Window:AddTab("🎣钓鱼功能", "fish")
 local TeleportTab = Window:AddTab("✈️地图传送", "map")
-local UISettingTab = Window:AddTab(🌸"界面设置", "settings")
+local UISettingTab = Window:AddTab("🌸界面设置", "settings")
 
 -- 全局状态配置表
 local Config = {
@@ -112,18 +112,18 @@ local MapGroup = TeleportTab:AddLeftGroupbox("直达传送", "location")
 MapGroup:AddLabel("点击直接跳转目标地图")
 
 local Maps = {
-    {id=1, name="无名水池(有5个钓法)"},
-    {id=2, name="达基姆河(有3个钓法)"},
-    {id=3, name="北部丛林(有2个钓法)"},
-    {id=4, name="钓鱼测试伤害(有0.1的鱼)"},
+    {id=1, name="无名水池（有5个钓法）"},
+    {id=2, name="达基姆河（有3个钓法）"},
+    {id=3, name="北部丛林（有2个钓法）"},
+    {id=4, name="钓鱼测试伤害（有0.1的鱼）"},
     {id=5, name="水源污染"},
-    {id=6, name="班戈河-南极河(有6个钓法)"},
-    {id=7, name="莫名其妙的洞穴(1个钓法)"},
-    {id=8, name="沙漠中的捕鱼区(有2个钓法)"},
-    {id=9, name="火山区(有3个钓法)"},
-    {id=10, name="中东海岛(长老眼镜蛇鱼)"},
-    {id=11, name="夏季海滩(觉醒恶魔鱼)"},
-    {id=12, name="樱花之地(把觉醒和长老给后面的人可以钓觉醒河罗鱼)"},
+    {id=6, name="班戈河-南极河（有6个钓法）"},
+    {id=7, name="莫名其妙的洞穴（1个钓法）"},
+    {id=8, name="沙漠中的捕鱼区（有2个钓法）"},
+    {id=9, name="火山区（有3个钓法）"},
+    {id=10, name="中东海岛（长老眼镜蛇鱼）"},
+    {id=11, name="夏季海滩（觉醒恶魔鱼）"},
+    {id=12, name="樱花之地（把觉醒和长老给后面的人可以钓觉醒河罗鱼）"},
     {id=13, name="PVP玩家竞技场"},
     {id=14, name="龙骨岛"},
     {id=15, name="百万吨之地"},
