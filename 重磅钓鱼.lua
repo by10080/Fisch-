@@ -17,9 +17,9 @@ local Window = Library:CreateWindow({
 })
 
 -- 创建分页
-local MainTab = Window:AddTab("钓鱼功能", "fish")
-local TeleportTab = Window:AddTab("地图传送", "map")
-local UISettingTab = Window:AddTab("界面设置", "settings")
+local MainTab = Window:AddTab("🎣钓鱼功能", "fish")
+local TeleportTab = Window:AddTab("⛳地图传送", "map")
+local UISettingTab = Window:AddTab("♦️界面设置", "settings")
 
 -- 全局状态配置表
 local Config = {
@@ -52,7 +52,7 @@ FishGroup:AddToggle("AutoSellSwitch", {
 local MoneyGroup = MainTab:AddRightGroupbox("金币工具", "cash")
 
 MoneyGroup:AddButton({
-    Text = "添加金币",
+    Text = "💰添加金币",
     Func = function()
         local rs = game:GetService("ReplicatedStorage")
         local buyEvent = rs:WaitForChild("Event"):WaitForChild("BuyEvent")
@@ -76,7 +76,7 @@ FishGroup:AddButton({
 })
 
 FishGroup:AddButton({
-    Text = "手动卖鱼一次",
+    Text = "💰手动卖鱼一次",
     Func = function()
         local ev = game.ReplicatedStorage:FindFirstChild("Event")
         if ev and ev:FindFirstChild("SellFishEvent") then
@@ -93,19 +93,23 @@ local MapGroup = TeleportTab:AddLeftGroupbox("直达传送", "location")
 MapGroup:AddLabel("点击直接跳转目标地图")
 
 local Maps = {
-    {id=1, name="无名水池"},
-    {id=2, name="达基姆河"},
-    {id=3, name="北部丛林"},
-    {id=4, name="钓鱼测试伤害"},
+    {id=1, name="无名水池（有5个钓法）"},
+    {id=2, name="达基姆河（有3个钓法）"},
+    {id=3, name="北部丛林（有2个钓法）"},
+    {id=4, name="钓鱼测试伤害（有0.1的🐟）"},
     {id=5, name="水源污染"},
-    {id=6, name="班戈河-南极河"},
-    {id=7, name="莫名其妙的洞穴"},
-    {id=8, name="沙漠中的捕鱼区"},
-    {id=9, name="火山区"},
+    {id=6, name="班戈河-南极河（有6个钓法）"},
+    {id=7, name="莫名其妙的洞穴（1个钓法）"},
+    {id=8, name="沙漠中的捕鱼区（有2个钓法）"},
+    {id=9, name="火山区（有3个钓法）"},
     {id=10, name="中东海岛（长老眼镜蛇鱼）"},
     {id=11, name="夏季海滩（觉醒恶魔鱼）"},
     {id=12, name="樱花之地（把觉醒和长老给后面的人可以钓觉醒河罗鱼）"},
     {id=13, name="PVP玩家竞技场"}
+    {id=14, name="龙骨岛"}
+    {id=15, name="百万吨之地"}
+    {id=16, name="远海旅行"}
+    {id=17, name="神秘蘑菇岛"}
 }
 
 for _, m in ipairs(Maps) do
@@ -126,8 +130,8 @@ end
 local TipGroup = UISettingTab:AddRightGroupbox("使用说明", "tips")
 TipGroup:AddLabel("📱 适配: 多机型")
 TipGroup:AddLabel("⚡ 秒钓无延迟")
-TipGroup:AddLabel("🐟觉醒河罗鱼=长老眼镜蛇+真相恶魔")
-TipGroup:AddLabel("🎣 眼镜蛇鱼→在樱花🌸NPC交换长老眼镜蛇")
+TipGroup:AddLabel("🐟觉醒河罗鱼=长老眼镜蛇+真形恶魔")
+TipGroup:AddLabel("🎣 眼镜蛇鱼→在中东NPC交换长老眼镜蛇")
 TipGroup:AddLabel("🐟恶魔👿→夏季瀑布里面→再钓=真型恶魔")
 
 -- 自动状态实时显示
