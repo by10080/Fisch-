@@ -1,6 +1,6 @@
 -- =============================================
--- ObsidianUI 钓鱼助手 | 完整版（含金币+右侧文字显示）
--- 适配设备：vivo
+-- ObsidianUI 初音钓鱼助手 | 完整版（含金币+右侧文字显示）
+-- 适配设备：vivo Y30
 -- =============================================
 
 -- 加载Obsidian核心库
@@ -8,8 +8,8 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deivi
 
 -- 初始化主窗口
 local Window = Library:CreateWindow({
-    Title = "🤓钓鱼助手",
-    Footer = "v1.7 修复版",
+    Title = "🤓重磅钓鱼",
+    Footer = "v1.0 修复版",
     ToggleKeybind = Enum.KeyCode.Menu,
     Center = true,
     AutoShow = true,
@@ -17,8 +17,8 @@ local Window = Library:CreateWindow({
 })
 
 -- 创建分页
-local MainTab = Window:AddTab("🎣钓鱼功能", "fish")
-local TeleportTab = Window:AddTab("✈️地图传送", "map")
+local MainTab = Window:AddTab("钓鱼功能", "fish")
+local TeleportTab = Window:AddTab("地图传送", "map")
 local UISettingTab = Window:AddTab("界面设置", "settings")
 
 -- 全局状态配置表
@@ -99,13 +99,13 @@ local Maps = {
     {id=4, name="钓鱼测试伤害"},
     {id=5, name="水源污染"},
     {id=6, name="班戈河-南极河"},
-    {id=7, name="中东海岛（长老眼镜蛇鱼）"},
+    {id=7, name="莫名其妙的洞穴"},
     {id=8, name="沙漠中的捕鱼区"},
     {id=9, name="火山区"},
-    {id=10, name="夏季海滩（觉醒恶魔鱼）"},
-    {id=11, name="樱花之地（把觉醒和长老给后面的人可以钓觉醒河罗鱼）"},
-    {id=12, name="PVP玩家竞技场"},
-    {id=13, name="神秘的蘑菇岛"}
+    {id=10, name="中东海岛（长老眼镜蛇鱼）"},
+    {id=11, name="夏季海滩（觉醒恶魔鱼）"},
+    {id=12, name="樱花之地（把觉醒和长老给后面的人可以钓觉醒河罗鱼）"},
+    {id=13, name="PVP玩家竞技场"}
 }
 
 for _, m in ipairs(Maps) do
@@ -122,8 +122,8 @@ end
 
 -- =============================================
 -- 新增：界面设置右侧空白文字展示模块
--- 1. 新建普通左对齐组盒，避开右容器天生右偏的坑
-local TipGroup = UISettingTab:AddGroupbox("使用说明")
+-- =============================================
+local TipGroup = UISettingTab:AddRightGroupbox("使用说明", "tips")
 TipGroup:AddLabel("📱 适配: 多机型")
 TipGroup:AddLabel("⚡ 秒钓无延迟")
 TipGroup:AddLabel("🐟觉醒河罗鱼=长老眼镜蛇+真相恶魔")
