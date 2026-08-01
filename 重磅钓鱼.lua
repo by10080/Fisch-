@@ -1,6 +1,6 @@
 -- =============================================
--- ObsidianUI 初音钓鱼助手 | 完整版（含金币+右侧文字显示）
--- 适配设备：vivo Y30
+-- ObsidianUI 钓鱼助手 | 完整版（含金币+右侧文字显示）
+-- 适配设备：vivo
 -- =============================================
 
 -- 加载Obsidian核心库
@@ -8,7 +8,7 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/deivi
 
 -- 初始化主窗口
 local Window = Library:CreateWindow({
-    Title = "🤓重磅钓鱼",
+    Title = "🤓钓鱼助手",
     Footer = "v1.0 修复版",
     ToggleKeybind = Enum.KeyCode.Menu,
     Center = true,
@@ -18,8 +18,8 @@ local Window = Library:CreateWindow({
 
 -- 创建分页
 local MainTab = Window:AddTab("🎣钓鱼功能", "fish")
-local TeleportTab = Window:AddTab("⛳地图传送", "map")
-local UISettingTab = Window:AddTab("💎界面设置", "settings")
+local TeleportTab = Window:AddTab("✈️地图传送", "map")
+local UISettingTab = Window:AddTab(🌸"界面设置", "settings")
 
 -- 全局状态配置表
 local Config = {
@@ -86,7 +86,7 @@ FishGroup:AddButton({
     Func = function()
         local ev = game.ReplicatedStorage:FindFirstChild("Event")
         if ev and ev:FindFirstChild("PullFishEvent") then
-            pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 1)
+            pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 10)
             Library:Notify("🎣已执行手动秒钓", 2)
         else
             Library:Notify("❌钓鱼事件未加载", 2)
@@ -113,16 +113,16 @@ MapGroup:AddLabel("点击直接跳转目标地图")
 
 local Maps = {
     {id=1, name="无名水池(有5个钓法)"},
-    {id=2, name="达基姆河(有3个钓法)},
+    {id=2, name="达基姆河(有3个钓法)"},
     {id=3, name="北部丛林(有2个钓法)"},
     {id=4, name="钓鱼测试伤害(有0.1的鱼)"},
-    {id=5, name="水源污染},
+    {id=5, name="水源污染"},
     {id=6, name="班戈河-南极河(有6个钓法)"},
     {id=7, name="莫名其妙的洞穴(1个钓法)"},
     {id=8, name="沙漠中的捕鱼区(有2个钓法)"},
     {id=9, name="火山区(有3个钓法)"},
     {id=10, name="中东海岛(长老眼镜蛇鱼)"},
-    {id=11, name="夏季海滩(觉醒恶魔鱼)},
+    {id=11, name="夏季海滩(觉醒恶魔鱼)"},
     {id=12, name="樱花之地(把觉醒和长老给后面的人可以钓觉醒河罗鱼)"},
     {id=13, name="PVP玩家竞技场"},
     {id=14, name="龙骨岛"},
@@ -145,7 +145,7 @@ end
 
 -- =============================================
 -- 新增：界面设置右侧空白文字展示模块
--- =============================================
+-- 1. 新建普通左对齐组盒，避开右容器天生右偏的坑
 local TipGroup = UISettingTab:AddRightGroupbox("使用说明", "tips")
 TipGroup:AddLabel("📱 适配: 多机型")
 TipGroup:AddLabel("⚡ 秒钓无延迟")
@@ -172,7 +172,7 @@ task.spawn(function()
         if Config.AutoFish then
             local ev = game.ReplicatedStorage:FindFirstChild("Event")
             if ev and ev:FindFirstChild("PullFishEvent") then
-                pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 1)
+                pcall(ev.PullFishEvent.FireServer, ev.PullFishEvent, 99999999999, 10)
             end
         end
         task.wait(0.3)
