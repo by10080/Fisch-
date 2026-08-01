@@ -62,6 +62,23 @@ MoneyGroup:AddButton({
     end
 })
 
+MoneyGroup:AddButton({
+    Text = "一键刷9999鱼饵",
+    Func = function()
+        local plr = game:GetService("Players").LocalPlayer
+        local char = plr.Character or plr.CharacterAdded:Wait()
+        -- 加容错避免不存在直接报错
+        local bait = char:FindFirstChild("Utilities") and char.Utilities:FindFirstChild("Bait")
+        if not bait then
+            Library:Notify("❌ 没找到鱼饵组件", 2)
+            return
+        end
+        local args = {bait, 9999}
+        game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("QuantityEvent"):FireServer(unpack(args))
+        Library:Notify("✅ 9999鱼饵提交成功", 2)
+    end
+})
+
 FishGroup:AddButton({
     Text = "手动秒钓一次",
     Func = function()
