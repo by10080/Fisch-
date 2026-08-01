@@ -19,7 +19,7 @@ local Window = Library:CreateWindow({
 -- 创建分页
 local MainTab = Window:AddTab("🎣钓鱼功能", "fish")
 local TeleportTab = Window:AddTab("⛳地图传送", "map")
-local UISettingTab = Window:AddTab("♦️界面设置", "settings")
+local UISettingTab = Window:AddTab("💎界面设置", "settings")
 
 -- 全局状态配置表
 local Config = {
@@ -52,7 +52,7 @@ FishGroup:AddToggle("AutoSellSwitch", {
 local MoneyGroup = MainTab:AddRightGroupbox("金币工具", "cash")
 
 MoneyGroup:AddButton({
-    Text = "💰添加金币",
+    Text = "💎添加金币",
     Func = function()
         local rs = game:GetService("ReplicatedStorage")
         local buyEvent = rs:WaitForChild("Event"):WaitForChild("BuyEvent")
@@ -62,20 +62,22 @@ MoneyGroup:AddButton({
     end
 })
 
+-- 替换你截图里第67行到第79行的全部刷鱼饵按钮代码
 MoneyGroup:AddButton({
     Text = "一键刷9999鱼饵",
     Func = function()
         local plr = game:GetService("Players").LocalPlayer
         local char = plr.Character or plr.CharacterAdded:Wait()
-        -- 加容错避免不存在直接报错
         local bait = char:FindFirstChild("Utilities") and char.Utilities:FindFirstChild("Bait")
         if not bait then
             Library:Notify("❌ 没找到鱼饵组件", 2)
             return
         end
-        local args = {bait, 9999}
-        game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("QuantityEvent"):FireServer(unpack(args))
-        Library:Notify("✅ 9999鱼饵提交成功", 2)
+        local rs = game:GetService("ReplicatedStorage")
+        local quantityEvent = rs:WaitForChild("Event"):WaitForChild("QuantityEvent")
+        -- 加pcall容错，就算事件不存在也不会炸脚本
+        local ok, err = pcall(quantityEvent.FireServer, quantityEvent, bait, 9999)
+        Library:Notify(ok and "✅ 9999鱼饵提交成功" or "❌ 操作失败:"..tostring(err), 2)
     end
 })
 
@@ -93,7 +95,7 @@ FishGroup:AddButton({
 })
 
 FishGroup:AddButton({
-    Text = "💰手动卖鱼一次",
+    Text = "手动卖鱼一次",
     Func = function()
         local ev = game.ReplicatedStorage:FindFirstChild("Event")
         if ev and ev:FindFirstChild("SellFishEvent") then
@@ -110,22 +112,22 @@ local MapGroup = TeleportTab:AddLeftGroupbox("直达传送", "location")
 MapGroup:AddLabel("点击直接跳转目标地图")
 
 local Maps = {
-    {id=1, name="无名水池（有5个钓法）"},
-    {id=2, name="达基姆河（有3个钓法）"},
-    {id=3, name="北部丛林（有2个钓法）"},
-    {id=4, name="钓鱼测试伤害（有0.1的🐟）"},
-    {id=5, name="水源污染"},
-    {id=6, name="班戈河-南极河（有6个钓法）"},
-    {id=7, name="莫名其妙的洞穴（1个钓法）"},
-    {id=8, name="沙漠中的捕鱼区（有2个钓法）"},
-    {id=9, name="火山区（有3个钓法）"},
-    {id=10, name="中东海岛（长老眼镜蛇鱼）"},
-    {id=11, name="夏季海滩（觉醒恶魔鱼）"},
-    {id=12, name="樱花之地（把觉醒和长老给后面的人可以钓觉醒河罗鱼）"},
-    {id=13, name="PVP玩家竞技场"}
-    {id=14, name="龙骨岛"}
-    {id=15, name="百万吨之地"}
-    {id=16, name="远海旅行"}
+    {id=1, name="无名水池(有5个钓法)"},
+    {id=2, name="达基姆河(有3个钓法)},
+    {id=3, name="北部丛林(有2个钓法)"},
+    {id=4, name="钓鱼测试伤害(有0.1的鱼)"},
+    {id=5, name="水源污染},
+    {id=6, name="班戈河-南极河(有6个钓法)"},
+    {id=7, name="莫名其妙的洞穴(1个钓法)"},
+    {id=8, name="沙漠中的捕鱼区(有2个钓法)"},
+    {id=9, name="火山区(有3个钓法)"},
+    {id=10, name="中东海岛(长老眼镜蛇鱼)"},
+    {id=11, name="夏季海滩(觉醒恶魔鱼)},
+    {id=12, name="樱花之地(把觉醒和长老给后面的人可以钓觉醒河罗鱼)"},
+    {id=13, name="PVP玩家竞技场"},
+    {id=14, name="龙骨岛"},
+    {id=15, name="百万吨之地"},
+    {id=16, name="远海旅行"},
     {id=17, name="神秘蘑菇岛"}
 }
 
